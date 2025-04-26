@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"modular_monolith/server/functions"
 	"net/url"
-	"os"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/joho/godotenv"
@@ -13,28 +13,20 @@ import (
 
 var DB *pgx.Conn
 
-func loadEnvVariable(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
 func InitDB() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	dbUser := loadEnvVariable("DB_USER", "postgres")
-	dbPassword := loadEnvVariable("DB_PASSWORD", "password-default")
-	dbHost := loadEnvVariable("DB_HOST", "localhost")
-	dbPort := loadEnvVariable("DB_PORT", "5432")
-	dbName := loadEnvVariable("DB_NAME", "postgres")
-	dbSchema := loadEnvVariable("DB_SCHEMA", "public")
-	env := loadEnvVariable("ENV", "development")
-	sslMode := loadEnvVariable("SSL_STATUS_DB", "disable")
+	dbUser := functions.LoadEnvVariable("DB_USER", "postgres")
+	dbPassword := functions.LoadEnvVariable("DB_PASSWORD", "password-default")
+	dbHost := functions.LoadEnvVariable("DB_HOST", "localhost")
+	dbPort := functions.LoadEnvVariable("DB_PORT", "5432")
+	dbName := functions.LoadEnvVariable("DB_NAME", "postgres")
+	dbSchema := functions.LoadEnvVariable("DB_SCHEMA", "public")
+	env := functions.LoadEnvVariable("ENV", "development")
+	sslMode := functions.LoadEnvVariable("SSL_STATUS_DB", "disable")
 
 	fmt.Println("DB_USER:", dbUser)
 	fmt.Println("DB_PASSWORD:", dbPassword)

@@ -18,7 +18,7 @@ func ApiV1Routes(app *fiber.App) {
 
 	// User routes
 	userGroup := v1.Group("/users")
-	user.RegisterRoutes(userGroup)
+	user.RegisterApp(userGroup)
 
 	// Tambahin module lain di sini kalau ada ya~ (*≧ω≦)
 }

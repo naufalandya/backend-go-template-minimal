@@ -47,7 +47,7 @@ func sanitizeString(value string) (string, error) {
 	injectionPatterns := []*regexp.Regexp{
 		regexp.MustCompile(`(?i)\b(SELECT|INSERT|DELETE|DROP|UPDATE|EXEC|UNION|--|;|')\b`),
 		regexp.MustCompile(`(?i)<script.*?>.*?</script>`),
-		regexp.MustCompile(`[&|;$%@"<>(){}[\]]`),
+		regexp.MustCompile(`[&|;$%"<>(){}\[\]]`),
 		regexp.MustCompile(`\.\./|\.\.\\`),
 		regexp.MustCompile(`(?i)(eval|alert|onerror|onload|prompt)\s*\(`),
 	}

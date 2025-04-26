@@ -88,7 +88,7 @@ func generateStructsFrommock(mockFilePath string) ([]string, error) {
 			match := reField.FindStringSubmatch(line)
 			if len(match) >= 3 { // At least type and name
 				fieldType := mockTypeToGo(match[1])
-				fieldName := cases.Title(language.English).String(match[2])
+				fieldName := toCamelCase(match[2])
 				structLines = append(structLines, addValidationTags(fieldType, fieldName))
 			}
 		}
@@ -130,7 +130,7 @@ func processmockFiles(mockFolderPath string) error {
 			}
 
 			// Create the model folder if it doesn't exist
-			modelFolderPath := filepath.Join(filepath.Dir(path), "../model")
+			modelFolderPath := filepath.Join(filepath.Dir(path), "../models")
 			if err := os.MkdirAll(modelFolderPath, os.ModePerm); err != nil {
 				return err
 			}
@@ -157,6 +157,14 @@ func processmockFiles(mockFolderPath string) error {
 	})
 
 	return err
+}
+
+func toCamelCase(str string) string {
+	parts := strings.Split(str, "_")
+	for i := range parts {
+		parts[i] = cases.Title(language.English).String(parts[i])
+	}
+	return strings.Join(parts, "")
 }
 
 func main() {

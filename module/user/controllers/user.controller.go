@@ -2,10 +2,13 @@ package controllers
 
 import (
 	"fmt"
-	global "modular_monolith/model"
+	"io"
+	global "modular_monolith/models"
 	"modular_monolith/module/user/models"
 	"modular_monolith/module/user/provider"
+	"modular_monolith/module/user/services"
 	"modular_monolith/server/functions"
+	"strings"
 
 	fiber "github.com/gofiber/fiber/v2"
 )
@@ -45,8 +48,8 @@ func GetUserByID(c *fiber.Ctx) error {
 	})
 }
 
-func CreateUser(c *fiber.Ctx) error {
-	var input models.UserInput
+func RegisterUserSimple(c *fiber.Ctx) error {
+	var input models.RegisterRequest
 
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
@@ -72,14 +75,135 @@ func CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	// Do Something With Data, Always Clean Code !, Always Put Main Logic Inside Controller, Dont Detail It !
+	// exist, err := provider.IsEmailOrUsernameExist(input.Email, input.Username)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(global.Apiresponse{
+	// 		Code:    fiber.StatusInternalServerError,
+	// 		Status:  false,
+	// 		Message: "Oops, something went wrong and its on us~ (｡•́︿•̀｡)",
+	// 	})
+	// }
+	// if exist {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
+	// 		Code:    fiber.StatusBadRequest,
+	// 		Status:  false,
+	// 		Message: "Email or Username already used~ (｀_´)",
+	// 	})
+	// }
+
+	hashedPassword, err := functions.HashPassword(input.Password)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(global.Apiresponse{
+			Code:    fiber.StatusInternalServerError,
+			Status:  false,
+			Message: "Oops, something went wrong and its on us~ (｡•́︿•̀｡)",
+		})
+	}
+
+	fmt.Println(hashedPassword)
+
+	// if err := provider.CreateUser(hashedPassword, input); err != nil {
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(global.Apiresponse{
+	// 		Code:    fiber.StatusInternalServerError,
+	// 		Status:  false,
+	// 		Message: "Cannot create user~ (つω≦ )",
+	// 	})
+	// }
+
+	if err := services.PublishMessage(input.FullName); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(global.Apiresponse{
+			Code:    fiber.StatusInternalServerError,
+			Status:  false,
+			Message: "Cannot publish message to Redis ~ (つω≦ )",
+		})
+	}
+
+	if err := services.PublishMessageRabbit("your-queue-name", input.FullName); err != nil {
+		fmt.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(global.Apiresponse{
+			Code:    fiber.StatusInternalServerError,
+			Status:  false,
+			Message: "Cannot publish message to Rabbitt ~ (つω≦ )",
+		})
+	}
 
 	return c.Status(fiber.StatusCreated).JSON(global.Apiresponse{
 		Code:    fiber.StatusCreated,
 		Status:  true,
-		Message: "Success",
-		Data:    input,
+		Message: "User created successfully~ (๑˃̵ᴗ˂̵)و",
 	})
+}
+
+// Constants for allowed file types and maximum file size
+const maxFileSize = 10 * 1024 * 1024 // 10MB
+
+func UploadFile(c *fiber.Ctx) error {
+	// Parse the form data to get the file
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
+			Code:    fiber.StatusBadRequest,
+			Status:  false,
+			Message: fmt.Sprintf("Failed to upload file: %s", err.Error()),
+		})
+	}
+
+	// Check the file size
+	if file.Size > maxFileSize {
+		return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
+			Code:    fiber.StatusBadRequest,
+			Status:  false,
+			Message: "File is too large. Maximum allowed size is 10MB.",
+		})
+	}
+
+	validExtensions := []string{".jpg", ".jpeg", ".png", ".pdf"}
+	fileExt := strings.ToLower(file.Filename[strings.LastIndex(file.Filename, "."):])
+
+	if !functions.Contains(validExtensions, fileExt) {
+		return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
+			Code:    fiber.StatusBadRequest,
+			Status:  false,
+			Message: "Invalid file type. Only .jpg, .jpeg, .png, and .pdf are allowed.",
+		})
+	}
+
+	fileHeader, err := file.Open()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(global.Apiresponse{
+			Code:    fiber.StatusInternalServerError,
+			Status:  false,
+			Message: "Error reading file header.",
+		})
+	}
+	defer fileHeader.Close()
+
+	if !functions.IsValidFileType(fileHeader) {
+		return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
+			Code:    fiber.StatusBadRequest,
+			Status:  false,
+			Message: "File type does not match the expected formats.",
+		})
+	}
+
+	if err := functions.ScanForVirus(fileHeader); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
+			Code:    fiber.StatusBadRequest,
+			Status:  false,
+			Message: fmt.Sprintf("File contains a virus or malware: %s", err.Error()),
+		})
+	}
+
+	fileData, err := io.ReadAll(fileHeader)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(global.Apiresponse{
+			Code:    fiber.StatusInternalServerError,
+			Status:  false,
+			Message: "Error reading file content.",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).Send(fileData)
 }
 
 // func CreateUser(c *fiber.Ctx) error {

@@ -40,3 +40,23 @@ func FetchUserByID(id string) (*models.User, error) {
 
 	return &user, nil
 }
+
+func IsEmailOrUsernameExist(email, username string) (bool, error) {
+	query := `SELECT COUNT(1) FROM users WHERE email = $1 OR username = $2`
+	var count int
+	err := db.DB.QueryRow(context.Background(), query, email, username).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func CreateUser(hashedPassword string, input models.RegisterRequest) error {
+
+	query := `
+		INSERT INTO users (full_name, email, username, password)
+		VALUES ($1, $2, $3, $4)
+	`
+	_, err := db.DB.Exec(context.Background(), query, input.FullName, input.Email, input.Username, hashedPassword)
+	return err
+}

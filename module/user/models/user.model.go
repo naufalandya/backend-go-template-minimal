@@ -6,15 +6,9 @@ type User struct {
 	Email string `json:"email" validate:"required,min=1,max=255"`
 }
 
-type UserInput struct {
-	Name    string   `json:"name" validate:"required,min=1,max=255"`
-	Email   string   `json:"email" validate:"required,email"`
-	Age     int      `json:"age" validate:"required,gt=0"`
-	Hobbies []string `json:"hobbies" validate:"required,dive,required"`
-	Profile Profile  `json:"profile" validate:"required"`
-}
-
-type Profile struct {
-	Bio   string  `json:"bio" validate:"required"`
-	Score float64 `json:"score" validate:"required,gt=0"`
+type RegisterRequest struct {
+	Email    string `json:"email" validate:"required,min=1,max=255"`
+	Password string `json:"password" validate:"required,min=1,max=255"`
+	FullName string `json:"full_name" validate:"required,min=1,max=255"`
+	Username string `json:"username" validate:"required,min=1,max=255"`
 }

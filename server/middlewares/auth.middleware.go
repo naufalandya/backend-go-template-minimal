@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	models "modular_monolith/model"
+	models "modular_monolith/models"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
