@@ -134,7 +134,7 @@ func AutoSanitizeStruct(s interface{}) error {
 	return nil
 }
 
-func AutoSuperSanitizeStruct(input interface{}) error {
+func FuckOffHackerByJSON(input interface{}) error {
 	v := reflect.ValueOf(input)
 	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return errors.New("input must be a non-nil pointer to a struct~ (｡•́︿•̀｡)")
