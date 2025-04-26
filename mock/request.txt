@@ -1,0 +1,5 @@
+message
+
+message UserRequest {
+  string user_id = 1;
+}

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package meow;
+
+option go_package = "github.com/naufalandya/modular_monolith/pb/meow";
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+}

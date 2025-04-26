@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package meow;
+
+option go_package = "github.com/naufalandya/modular_monolith/pb/meow";
+
+message ApiResponse {
+  string message = 1;
+  int32 code = 2;
+  bool status = 3;
+  string error = 4;
+  google.protobuf.Struct data = 5; 
+}
