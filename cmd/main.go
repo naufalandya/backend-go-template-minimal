@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"modular_monolith/server/api"
+	"modular_monolith/server/client"
 	db "modular_monolith/server/config/db"
 	"modular_monolith/server/config/redis"
 	middlewares "modular_monolith/server/middlewares"
@@ -30,6 +31,11 @@ func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
+	}
+
+	err = client.Connect()
+	if err != nil {
+		log.Fatalf("Failed to connect to gRPC: %v", err)
 	}
 
 	// Set environment and logger if in development mode
@@ -68,7 +74,7 @@ func main() {
 
 	// Start the Fiber server in a goroutine
 	go func() {
-		log.Fatal(app.Listen(":8080"))
+		log.Fatal(app.Listen(":8081"))
 	}()
 
 	// Wait for a termination signal

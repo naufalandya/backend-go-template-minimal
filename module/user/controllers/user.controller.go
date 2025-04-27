@@ -1,12 +1,16 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"log"
 	global "modular_monolith/models"
 	"modular_monolith/module/user/models"
 	"modular_monolith/module/user/provider"
 	"modular_monolith/module/user/services"
+	pbapi "modular_monolith/protobuf/api"
+	"modular_monolith/server/client"
 	"modular_monolith/server/functions"
 	"strings"
 
@@ -131,6 +135,33 @@ func RegisterUserSimple(c *fiber.Ctx) error {
 		Code:    fiber.StatusCreated,
 		Status:  true,
 		Message: "User created successfully~ (๑˃̵ᴗ˂̵)و",
+	})
+}
+
+func SayHello(c *fiber.Ctx) error {
+	var input models.RegisterRequest
+
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(global.Apiresponse{
+			Code:    fiber.StatusBadRequest,
+			Status:  false,
+			Message: fmt.Sprintf("Cannot parse your body~ (´；ω；｀) : %s", err.Error()),
+		})
+	}
+
+	res, err := client.HelloWorldService.SayHello(context.Background(), &pbapi.HelloRequest{
+		Name: "Andya",
+	})
+
+	if err != nil {
+		log.Fatalf("Error calling gRPC service: %v", err)
+	}
+	log.Printf("Response: %v", res)
+
+	return c.Status(fiber.StatusOK).JSON(global.Apiresponse{
+		Code:    fiber.StatusOK,
+		Status:  true,
+		Message: "Okiie dokkie ~ (๑˃̵ᴗ˂̵)و",
 	})
 }
 

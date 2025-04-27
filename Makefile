@@ -2,7 +2,7 @@ APP_NAME = modular_monolith
 BUILD_DIR = build
 MAIN_FILE = cmd/main.go
 GPRC_PORT = 3552
-FIBER_PORT = 8080
+FIBER_PORT = 8081
 
 .PHONY: run build stop
 
@@ -14,8 +14,8 @@ build:
 	go build -o $(BUILD_DIR)/$(APP_NAME) $(MAIN_FILE)
 
 stop:
-	@echo "🌸 Stopping Fiber on port 8080..."
-	@fiber_pid=$$(lsof -i :8080 -t 2>/dev/null); \
+	@echo "🌸 Stopping Fiber on port 8081..."
+	@fiber_pid=$$(lsof -i :8081 -t 2>/dev/null); \
 	if [ -n "$$fiber_pid" ]; then \
 		kill -9 $$fiber_pid; \
 		echo "Fiber stopped! (＾▽＾)"; \

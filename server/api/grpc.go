@@ -28,7 +28,7 @@ type Config struct {
 func LoadConfig() *Config {
 	port := os.Getenv("GRPC_PORT")
 	if port == "" {
-		port = "3551" // default port if not set, safety net! 🎀
+		port = "3552" // default port if not set, safety net! 🎀
 	}
 
 	return &Config{

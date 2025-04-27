@@ -12,10 +12,6 @@ func ApiV1Routes(app *fiber.App) {
 
 	v1 := api.Group("/v1")
 
-	// // Auth routes
-	// authGroup := v1.Group("/auth")
-	// auth.RegisterRoutes(authGroup)
-
 	// User routes
 	userGroup := v1.Group("/users")
 	user.RegisterApp(userGroup)
