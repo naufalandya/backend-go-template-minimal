@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
-	"modular_monolith/module/user/models"
+	"modular_monolith/server/api/legal/models"
 	"modular_monolith/server/config/db"
 )
 

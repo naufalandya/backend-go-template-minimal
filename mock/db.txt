@@ -9,3 +9,23 @@ message User {
   string name = 2;
   string email = 3;
 }
+
+message File {
+  string id = 1;
+  string name = 2;
+  int32 folder_id = 3;
+  int32 uploaded_by = 4;
+  string path = 5;
+  int32 size = 6;
+  string type = 7;
+  string createdAt = 8;       
+  string updatedAt = 9;
+  string tgl_berlaku = 10;
+  string tgl_penetapan = 11;
+  string title = 12;
+  string nomor = 13;
+  string tahun = 14;
+  string file_name = 15;
+  bool is_trash = 16;
+  string download = 17;
+}

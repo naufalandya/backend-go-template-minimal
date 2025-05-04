@@ -2,7 +2,7 @@ package auto
 
 import (
 	"log"
-	"modular_monolith/module/user/services"
+	"modular_monolith/server/api/user/services"
 	rabbitmq "modular_monolith/server/config/rabbit"
 	"os"
 	"os/signal"

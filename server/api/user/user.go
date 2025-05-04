@@ -1,9 +1,8 @@
 package user_module
 
 import (
-	"modular_monolith/module/user/auto"
-	"modular_monolith/module/user/controllers"
-	"modular_monolith/server/config/firebase"
+	"modular_monolith/server/api/user/auto"
+	"modular_monolith/server/api/user/controllers"
 	rabbitmq "modular_monolith/server/config/rabbit"
 	"modular_monolith/server/middlewares"
 
@@ -15,7 +14,6 @@ import (
 func RegisterApp(router fiber.Router) {
 
 	rabbitmq.InitRabbitMQ()
-	firebase.InitFirebase() // 🌟✨ init Firebase here kawaii
 
 	go auto.SubscribeToChannel("my_channel")
 

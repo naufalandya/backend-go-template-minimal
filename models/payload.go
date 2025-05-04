@@ -1,3 +1,3 @@
 package model
 
-// Generated structs from C:\Andya\Go\modular monolith\mock\payload.txt
+// Generated structs from C:\Andya\Go\standard_template\mock\payload.txt

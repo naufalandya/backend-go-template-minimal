@@ -2,90 +2,143 @@ package main
 
 import (
 	"context"
-	"log"
-	"modular_monolith/server/api"
-	"modular_monolith/server/client"
-	db "modular_monolith/server/config/db"
-	"modular_monolith/server/config/redis"
-	middlewares "modular_monolith/server/middlewares"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"modular_monolith/server/api"
+	"modular_monolith/server/client"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
+// Custom Fiber Logger Middleware using logrus
+func logrusLogger() fiber.Handler {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
+
+	// Set log level based on environment
+	if os.Getenv("ENV") == "development" {
+		logger.SetLevel(logrus.DebugLevel)
+	} else {
+		logger.SetLevel(logrus.InfoLevel)
+	}
+
+	return func(c *fiber.Ctx) error {
+		// Log the request
+		start := time.Now()
+		err := c.Next()
+
+		// Log response details
+		duration := time.Since(start)
+		logger.WithFields(logrus.Fields{
+			"status":  c.Response().StatusCode(),
+			"method":  c.Method(),
+			"path":    c.Path(),
+			"latency": duration,
+		}).Info("Request completed")
+
+		return err
+	}
+}
+
 func main() {
-	// Initialize DB and Redis
-	db.InitDB()
-	redis.InitRedis()
+	// // Initialize database and Redis connections
+	// if err := db.InitDB(); err != nil {
+	// 	logrus.Fatalf("Failed to initialize database: %v", err)
+	// }
+	// if err := redis.InitRedis(); err != nil {
+	// 	logrus.Fatalf("Failed to initialize Redis: %v", err)
+	// }
 
-	// Set up Fiber app
-	app := fiber.New()
-
+	// Create Fiber app
+	app := fiber.New(fiber.Config{
+		BodyLimit: 500 * 1024 * 1024,
+	})
 	// Load environment variables
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logrus.Fatal("Error loading .env file")
 	}
 
+	// Connect to gRPC server
 	err = client.Connect()
 	if err != nil {
-		log.Fatalf("Failed to connect to gRPC: %v", err)
+		logrus.Fatalf("Failed to connect to gRPC: %v", err)
 	}
 
-	// Set environment and logger if in development mode
-	env := os.Getenv("ENV")
-	if env == "development" {
-		middlewares.SetupLogger(app)
-		app.Use(logger.New())
-	}
+	// Use custom logrus logger middleware
+	app.Use(logrusLogger())
 
-	// Load gRPC config
-	cfg := api.LoadConfig()
+	// Load API configuration
+	// cfg := api.LoadConfig()
 
 	// Create a channel to listen for termination signals
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Create a context for graceful shutdown
+	// Create a context with a timeout for the graceful shutdown process
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Start the gRPC server in a goroutine
-	go func() {
-		if err := api.Start(cfg); err != nil {
-			log.Fatalf("❌ Failed to start gRPC server: %v", err)
-		}
-	}()
+	// go func() {
+	// 	if err := api.Start(cfg); err != nil {
+	// 		logrus.Errorf("❌ gRPC server error: %v", err) // Log error without shutting down
+	// 	}
+	// }()
 
-	// Set up Swagger documentation for Fiber
+	// Serve Swagger API documentation
 	app.Static("/swagger", "./docs")
 	app.Get("/swagger/*", swagger.New(swagger.Config{
 		URL: "/swagger/v1.yaml",
 	}))
 
-	// Set up Fiber routes
+	// Setup routes for the API
 	api.ApiV1Routes(app)
 
 	// Start the Fiber server in a goroutine
 	go func() {
-		log.Fatal(app.Listen(":8081"))
+		if err := app.Listen(":8081"); err != nil {
+			logrus.Errorf("❌ Fiber server error: %v", err) // Log error without shutting down
+		}
 	}()
 
-	// Wait for a termination signal
-	<-sigChan
-
-	// Gracefully shut down Fiber
-	log.Println("Shutting down Fiber...")
-	if err := app.Shutdown(); err != nil {
-		log.Fatalf("Fiber shutdown error: %v", err)
+	// Wait for termination signal or error
+	select {
+	case sig := <-sigChan:
+		logrus.Printf("Received signal: %s, shutting down...", sig)
+		// Initiate graceful shutdown for Fiber
+		if err := app.Shutdown(); err != nil {
+			logrus.Fatalf("Fiber shutdown error: %v", err)
+		}
+	case err := <-waitForError():
+		logrus.Printf("Received error: %v, shutting down...", err)
+		// Handle error and initiate shutdown
+		if err := app.Shutdown(); err != nil {
+			logrus.Fatalf("Fiber shutdown error due to service failure: %v", err)
+		}
 	}
 
 	<-ctx.Done()
-	log.Println("Graceful shutdown completed")
+	logrus.Println("Graceful shutdown completed")
+}
+
+// waitForError waits for an error from gRPC or other sources
+func waitForError() <-chan error {
+	errChan := make(chan error, 1)
+
+	// // Example: You could listen for errors from gRPC, database, or any other service
+	// go func() {
+	// 	// Placeholder: error goes to channel
+	// 	errChan <- fmt.Errorf("some error occurred in the system") // Simulating an error
+	// }()
+
+	return errChan
 }

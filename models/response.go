@@ -1,6 +1,6 @@
 package model
 
-// Generated structs from C:\Andya\Go\modular monolith\mock\response.txt
+// Generated structs from C:\Andya\Go\standard_template\mock\response.txt
 
 type Apiresponse struct {
   Message string `json:"message" validate:"required,min=1,max=255"`

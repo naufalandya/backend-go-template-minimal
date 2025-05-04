@@ -2,7 +2,7 @@ package api
 
 import (
 	// auth "modular_monolith/module/auth"
-	user "modular_monolith/module/user"
+	legal "modular_monolith/server/api/legal"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,9 +12,7 @@ func ApiV1Routes(app *fiber.App) {
 
 	v1 := api.Group("/v1")
 
-	// User routes
-	userGroup := v1.Group("/users")
-	user.RegisterApp(userGroup)
+	legalGroup := v1.Group("/legal")
+	legal.RegisterApp(legalGroup)
 
-	// Tambahin module lain di sini kalau ada ya~ (*≧ω≦)
 }

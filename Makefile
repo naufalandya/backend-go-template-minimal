@@ -5,9 +5,11 @@ GPRC_PORT = 3552
 FIBER_PORT = 8081
 
 .PHONY: run build stop
+VCPKG_ROOT = C:/vcpkg
 
 run:
 	go run $(MAIN_FILE)
+
 
 build:
 	mkdir -p $(BUILD_DIR)
@@ -31,3 +33,12 @@ stop:
 	else \
 		echo "gRPC not running! (｡•́︿•̀｡)"; \
 	fi
+
+struct:
+	./scripts/generate_struct.exe
+
+proto:
+	./scripts/generate_proto.sh
+
+mod:
+	go mod tidy -e
