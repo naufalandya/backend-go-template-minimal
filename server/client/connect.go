@@ -24,7 +24,7 @@ func Connect() (*ServiceClients, error) {
 		}
 	}
 
-	connLegals, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connLegals, err := grpc.NewClient("103.196.155.16:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		if err != nil {
 			log.Printf("Failed to connect to Legal service: %v", err)
