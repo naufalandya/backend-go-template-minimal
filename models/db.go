@@ -27,3 +27,9 @@ type File struct {
   IsTrash bool `json:"is_trash" validate:"required"`
   Download string `json:"download" validate:"required,min=1,max=255"`
 }
+
+type Relation struct {
+  ImpacterFileId string `json:"impacter_file_id" validate:"required,min=1,max=255"`
+  ImpactedFileId string `json:"impacted_file_id" validate:"required,min=1,max=255"`
+  Type string `json:"type" validate:"required,min=1,max=255"`
+}

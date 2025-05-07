@@ -8,19 +8,34 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// Global variable to store the gRPC client
-var HelloWorldService api.HelloWorldClient
+var Clients *ServiceClients
 
-// Connect to the gRPC service and initialize the client
-func Connect() error {
+type ServiceClients struct {
+	HelloWorldClient   api.HelloWorldClient
+	LegalServiceClient api.FileServiceClient
+}
+
+func Connect() (*ServiceClients, error) {
 	conn, err := grpc.NewClient("localhost:3551", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Printf("did not connect: %v", err)
-		return err
+		if err != nil {
+			log.Printf("Failed to connect to HelloWorld service: %v", err)
+			return nil, err
+		}
 	}
 
-	HelloWorldService = api.NewHelloWorldClient(conn)
-	return nil
+	connLegals, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		if err != nil {
+			log.Printf("Failed to connect to Legal service: %v", err)
+			return nil, err
+		}
+	}
+
+	return &ServiceClients{
+		HelloWorldClient:   api.NewHelloWorldClient(conn),
+		LegalServiceClient: api.NewFileServiceClient(connLegals),
+	}, nil
 }
 
 // // ServiceClients holds all your service clients

@@ -3,27 +3,28 @@ package elastic
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-// Global Elasticsearch client instance
 var Client *elasticsearch.Client
 
-// InitElasticSearch initializes the Elasticsearch client
 func InitElasticSearch() error {
-	// Configure Elasticsearch client
+	esURL := os.Getenv("ELASTICSEARCH_URL")
+	if esURL == "" {
+		esURL = "http://localhost:9200"
+	}
+
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{
-			"http://localhost:9200", // Elasticsearch server address
-		},
+		Addresses: []string{esURL},
 	})
+
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
 		return err
 	}
 
-	// Check the connection by pinging Elasticsearch
 	res, err := es.Info()
 	if err != nil {
 		log.Fatalf("Error getting response: %s", err)
@@ -31,10 +32,8 @@ func InitElasticSearch() error {
 	}
 	defer res.Body.Close()
 
-	// If successful, assign to global Client
 	Client = es
 
-	// Print basic info about the connection
 	fmt.Println("Connected to Elasticsearch")
 	return nil
 }

@@ -15,8 +15,9 @@ func RegisterApp(router fiber.Router) {
 
 	// go auto.ConsumerRabbit()
 
-	router.Get("/",
+	router.Post("/",
 		// middlewares.NewRateLimiterMiddleware(5, 10),
+		middlewares.BearerTokenAuth,
 		middlewares.MaxBodySizeMiddleware(500*1024*1024), // Allow up to 500MB
 		controllers.UploadFile)
 }

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -149,8 +148,8 @@ func SayHello(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := client.HelloWorldService.SayHello(context.Background(), &pbapi.HelloRequest{
-		Name: "Andya",
+	res, err := client.Clients.HelloWorldClient.SayHello(c.Context(), &pbapi.HelloRequest{
+		Name: input.FullName, // or hardcoded "Andya"
 	})
 
 	if err != nil {

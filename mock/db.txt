@@ -29,3 +29,9 @@ message File {
   bool is_trash = 16;
   string download = 17;
 }
+
+message Relation {
+  string impacter_file_id = 1;
+  string impacted_file_id = 2;
+  string type = 3;
+}

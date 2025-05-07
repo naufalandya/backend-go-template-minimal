@@ -54,7 +54,7 @@ func BearerTokenAuth(c *fiber.Ctx) error {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		c.Locals("user_id", claims["user_id"])
+		c.Locals("id", claims["id"])
 		c.Locals("roles", claims["roles"])
 
 		return c.Next()

@@ -77,7 +77,7 @@ func ExtractTextFromPDF(file io.Reader) (string, error) {
 				prevX = ch.X
 			}
 			textBuilder.WriteString(lineBuilder.String())
-			textBuilder.WriteString(" ") // replace newline with space
+			textBuilder.WriteString(" ")
 		}
 	}
 
