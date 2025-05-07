@@ -13,7 +13,7 @@ var Client *elasticsearch.Client
 func InitElasticSearch() error {
 	esURL := os.Getenv("ELASTICSEARCH_URL")
 	if esURL == "" {
-		esURL = "http://localhost:9200"
+		esURL = "http://elasticsearch:9200"
 	}
 
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
